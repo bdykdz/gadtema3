@@ -8,6 +8,7 @@ class TicTacToeGame extends StatefulWidget {
 }
 
 class TicTacToeGameState extends State<TicTacToeGame> {
+  // Tabla de joc și variabilele aferente stării.
   List<String> _board = List.filled(9, '');
   bool _isPlayer1Turn = true;
   List<int>? _winningIndices;
@@ -17,17 +18,29 @@ class TicTacToeGameState extends State<TicTacToeGame> {
     _winningIndices = _checkWinner(_board);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tic Tac Toe'),
+        title: const Text(
+          'Tic Tac Toe',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.yellow,
       ),
-      body: Stack(
+      body: Column(
         children: [
-          _buildBoard(),
-          if (_winningIndices != null) _buildPlayAgainButton(),
+          // Construiește tabla de joc.
+          Expanded(child: _buildBoard()),
+          // Dacă există un câștigător sau remiză, afișează butonul "Play Again".
+          if (_winningIndices != null || _isGameOver()) _buildPlayAgainButton(),
         ],
       ),
     );
   }
 
+  // _buildBoard generează o grilă 3x3 folosind GridView.builder.
   Widget _buildBoard() {
     return GridView.builder(
       itemCount: 9,
@@ -35,15 +48,20 @@ class TicTacToeGameState extends State<TicTacToeGame> {
         crossAxisCount: 3,
       ),
       itemBuilder: (BuildContext context, int index) {
+        // Creează un pătrat la indexul dat.
         return _buildSquare(index);
       },
     );
   }
 
+  // _buildSquare creează un pătrat la indexul dat, gestionând evenimentele onTap
+  // și aplicând culoarea corespunzătoare în funcție de starea jocului.
   Widget _buildSquare(int index) {
+    // Verifică dacă pătratul face parte din linia câștigătoare.
     bool isWinningSquare = _winningIndices != null && _winningIndices!.contains(index);
     bool gameOver = _isGameOver();
 
+    // Construiește pătratul cu culoarea și comportamentul onTap corespunzător.
     return GestureDetector(
       onTap: () => _handleTap(index),
       child: AnimatedContainer(
@@ -65,6 +83,8 @@ class TicTacToeGameState extends State<TicTacToeGame> {
     );
   }
 
+// _handleTap gestionează evenimentele de atingere pe fiecare pătrat, umplând
+// pătratul dacă este gol și schimbând rândul între cei doi jucători.
   void _handleTap(int index) {
     if (_board[index] == '' && !_isGameOver()) {
       setState(() {
@@ -74,10 +94,14 @@ class TicTacToeGameState extends State<TicTacToeGame> {
     }
   }
 
+// _isGameOver verifică dacă jocul s-a încheiat verificând dacă există un câștigător
+// sau dacă tabla este plină.
   bool _isGameOver() {
     return _checkWinner(_board) != null || !_board.contains('');
   }
 
+// _checkWinner verifică dacă există un câștigător pe tabla de joc comparând starea
+// acesteia cu o listă de poziții câștigătoare posibile.
   List<int>? _checkWinner(List<String> board) {
     List<List<int>> winningPositions = [
       [0, 1, 2],
@@ -103,6 +127,7 @@ class TicTacToeGameState extends State<TicTacToeGame> {
     return null;
   }
 
+// _buildPlayAgainButton creează un buton care resetează starea jocului când este apăsat.
   Widget _buildPlayAgainButton() {
     return Center(
       child: ElevatedButton(
@@ -112,6 +137,9 @@ class TicTacToeGameState extends State<TicTacToeGame> {
             _isPlayer1Turn = true;
           });
         },
+        style: ElevatedButton.styleFrom(
+          primary: Colors.grey,
+        ),
         child: const Text('Play again'),
       ),
     );
