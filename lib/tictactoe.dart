@@ -4,10 +4,10 @@ class TicTacToeGame extends StatefulWidget {
   const TicTacToeGame({Key? key}) : super(key: key);
 
   @override
-  _TicTacToeGameState createState() => _TicTacToeGameState();
+  TicTacToeGameState createState() => TicTacToeGameState();
 }
 
-class _TicTacToeGameState extends State<TicTacToeGame> {
+class TicTacToeGameState extends State<TicTacToeGame> {
   List<String> _board = List.filled(9, '');
   bool _isPlayer1Turn = true;
   List<int>? _winningIndices;
@@ -17,9 +17,7 @@ class _TicTacToeGameState extends State<TicTacToeGame> {
     _winningIndices = _checkWinner(_board);
     return Scaffold(
       appBar: AppBar(
-        centerTitle: true,
         title: const Text('Tic Tac Toe'),
-        backgroundColor: Colors.yellow,
       ),
       body: Stack(
         children: [
