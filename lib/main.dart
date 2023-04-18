@@ -1,115 +1,229 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const TicTacToeApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class TicTacToeApp extends StatelessWidget {
+  const TicTacToeApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Tic Tac Toe',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const TicTacToeGame(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class TicTacToeGame extends StatefulWidget {
+  const TicTacToeGame({Key? key}) : super(key: key);
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  _TicTacToeGameState createState() => _TicTacToeGameState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
+class _TicTacToeGameState extends State<TicTacToeGame> {
+  List<String> _board = List.filled(9, '');
+  bool _isPlayerTurn = true;
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+       title: Text(
+    'Tic Tac Toe',
+    style: TextStyle(
+      color: Colors.black,
+    ),
+  ),
+  backgroundColor: Colors.yellow,
+  centerTitle: true,
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      body: _buildBoard(),
     );
   }
+
+  Widget _buildBoard() {
+    return GridView.builder(
+      padding: const EdgeInsets.all(10.0),
+      itemCount: 9,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        mainAxisSpacing: 10.0,
+        crossAxisSpacing: 10.0,
+        childAspectRatio: 1.0,
+      ),
+      itemBuilder: (BuildContext context, int index) {
+        return _buildSquare(index);
+      },
+    );
+  }
+
+  Widget _buildSquare(int index) {
+  return GestureDetector(
+    onTap: () => _handleTap(index),
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.ease,
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.black),
+        color: _board[index] == 'P'
+            ? Colors.green
+            : _board[index] == 'A'
+                ? Colors.red
+                : Colors.white,
+      ),
+    ),
+  );
 }
+
+
+  void _handleTap(int index) {
+  if (_board[index] == '' && _isPlayerTurn) {
+    setState(() {
+      _board[index] = 'P';
+      _isPlayerTurn = false;
+    });
+
+    if (_isGameOver()) {
+      return;
+    }
+
+    _aiTurn();
+  }
+}
+
+void _aiTurn() {
+  int bestScore = -1000;
+  int bestMove = -1;
+
+  for (int i = 0; i < 9; i++) {
+    if (_board[i] == '') {
+      _board[i] = 'A';
+      int score = _minimax(_board, false);
+      _board[i] = '';
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestMove = i;
+      }
+    }
+  }
+
+  if (bestMove != -1) {
+    setState(() {
+      _board[bestMove] = 'A';
+      _isPlayerTurn = true;
+    });
+  }
+
+  _isGameOver();
+}
+
+
+
+  int _minimax(List<String> board, bool isMaximizing) {
+    String winner = _checkWinner(board);
+    if (winner != '') {
+      return winner == 'P' ? -1 : 1;
+    }
+
+    if (board.every((square) => square != '')) {
+      return 0;
+    }
+
+    if (isMaximizing) {
+      int bestScore = -1000;
+      for (int i = 0; i < 9; i++) {
+    if (board[i] == '') {
+      board[i] = 'A';
+      int score = _minimax(board, false);
+      board[i] = '';
+      bestScore = max(score, bestScore);
+    }
+  }
+  return bestScore;
+} else {
+  int bestScore = 1000;
+
+  for (int i = 0; i < 9; i++) {
+    if (board[i] == '') {
+      board[i] = 'P';
+      int score = _minimax(board, true);
+      board[i] = '';
+      bestScore = min(score, bestScore);
+    }
+  }
+  return bestScore;
+}
+}
+
+String _checkWinner(List<String> board) {
+List<List<int>> winningPositions = [
+[0, 1, 2],
+[3, 4, 5],
+[6, 7, 8],
+[0, 3, 6],
+[1, 4, 7],
+[2, 5, 8],
+[0, 4, 8],
+[2, 4, 6],
+];
+
+for (List<int> winningPosition in winningPositions) {
+  String a = board[winningPosition[0]];
+  String b = board[winningPosition[1]];
+  String c = board[winningPosition[2]];
+
+  if (a == b && b == c && a != '') {
+    return a;
+  }
+}
+
+return '';
+}
+
+bool _isGameOver() {
+String winner = _checkWinner(_board);
+if (winner != '') {
+  String message = winner == 'P' ? 'Player wins!' : 'AI wins!';
+  _showDialog(message);
+  return true;
+} else if (_board.every((square) => square != '')) {
+  _showDialog('It\'s a draw!');
+  return true;
+}
+
+return false;
+}
+
+void _showDialog(String message) {
+showDialog<void>(
+context: context,
+barrierDismissible: false,
+builder: (BuildContext context) {
+return AlertDialog(
+title: Text(message),
+actions: <Widget>[
+TextButton(
+child: const Text('Play again'),
+onPressed: () {
+setState(() {
+_board = List.filled(9, '');
+_isPlayerTurn = true;
+});
+Navigator.of(context).pop();
+},
+),
+],
+);
+},
+);
+}
+}
+     
