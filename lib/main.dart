@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
 
 void main() {
   runApp(const MaterialApp(
@@ -16,7 +15,7 @@ class TicTacToeGame extends StatefulWidget {
 
 class _TicTacToeGameState extends State<TicTacToeGame> {
   List<String> _board = List.filled(9, '');
-  bool _isPlayerTurn = true;
+  bool _isPlayer1Turn = true;
   List<int>? _winningIndices;
 
   @override
@@ -47,107 +46,37 @@ class _TicTacToeGameState extends State<TicTacToeGame> {
     );
   }
 
-Widget _buildSquare(int index) {
-  bool isWinningSquare = _winningIndices != null && _winningIndices!.contains(index);
-  bool gameOver = _isGameOver();
+  Widget _buildSquare(int index) {
+    bool isWinningSquare = _winningIndices != null && _winningIndices!.contains(index);
+    bool gameOver = _isGameOver();
 
-  return GestureDetector(
-    onTap: () => _handleTap(index),
-    child: AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.ease,
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.black),
-        color: isWinningSquare
-            ? (_board[index] == 'P' ? Colors.green : Colors.red)
-            : gameOver
-                ? Colors.white
-                : _board[index] == 'P'
-                    ? Colors.green
-                    : _board[index] == 'A'
-                        ? Colors.red
-                        : Colors.white,
+    return GestureDetector(
+      onTap: () => _handleTap(index),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.ease,
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.black),
+          color: isWinningSquare
+              ? (_board[index] == 'P1' ? Colors.green : Colors.red)
+              : gameOver
+                  ? Colors.white
+                  : _board[index] == 'P1'
+                      ? Colors.green
+                      : _board[index] == 'P2'
+                          ? Colors.red
+                          : Colors.white,
+        ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 
   void _handleTap(int index) {
-    if (_board[index] == '' && _isPlayerTurn) {
+    if (_board[index] == '' && !_isGameOver()) {
       setState(() {
-        _board[index] = 'P';
-        _isPlayerTurn = false;
+        _board[index] = _isPlayer1Turn ? 'P1' : 'P2';
+        _isPlayer1Turn = !_isPlayer1Turn;
       });
-
-      if (_isGameOver()) {
-        return;
-      }
-
-      _aiTurn();
-    }
-  }
-
-  void _aiTurn() {
-    int bestScore = -1000;
-    int bestMove = -1;
-
-    for (int i = 0; i < 9; i++) {
-      if (_board[i] == '') {
-        _board[i] = 'A';
-        int score = _minimax(_board, false);
-        _board[i] = '';
-
-        if (score > bestScore) {
-          bestScore = score;
-          bestMove = i;
-        }
-      }
-    }
-
-    if (bestMove != -1) {
-      setState(() {
-        _board[bestMove] = 'A';
-        _isPlayerTurn = true;
-      });
-    }
-
-    _isGameOver();
-  }
-
-  int _minimax(List<String> board, bool isMaximizing) {
-    if (_isGameOver()) {
-      if (_winningIndices != null) {
-        return board[_winningIndices![0]] == 'A' ? 1 : -1;
-      } else {
-        return 0;
-      }
-    }
-
-    if (isMaximizing) {
-      int bestScore = -1000;
-
-            for (int i = 0; i < 9; i++) {
-        if (board[i] == '') {
-          board[i] = 'A';
-          int score = _minimax(board, false);
-          board[i] = '';
-          bestScore = max(score, bestScore);
-        }
-      }
-      return bestScore;
-    } else {
-      int bestScore = 1000;
-
-      for (int i = 0; i < 9; i++) {
-        if (board[i] == '') {
-          board[i] = 'P';
-          int score = _minimax(board, true);
-          board[i] = '';
-          bestScore = min(score, bestScore);
-        }
-      }
-      return bestScore;
     }
   }
 
@@ -178,20 +107,19 @@ Widget _buildSquare(int index) {
     }
 
     return null;
-  }
-
-  Widget _buildPlayAgainButton() {
-    return Center(
-      child: ElevatedButton(
-        onPressed: () {
-          setState(() {
-            _board = List.filled(9, '');
-            _isPlayerTurn = true;
-          });
-        },
-        child: const Text('Play again'),
-      ),
-    );
-  }
 }
 
+Widget _buildPlayAgainButton() {
+return Center(
+child: ElevatedButton(
+onPressed: () {
+setState(() {
+_board = List.filled(9, '');
+_isPlayer1Turn = true;
+});
+},
+child: const Text('Play again'),
+),
+);
+}
+}
