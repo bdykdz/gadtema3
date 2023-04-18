@@ -138,7 +138,7 @@ class TicTacToeGameState extends State<TicTacToeGame> {
           });
         },
         style: ElevatedButton.styleFrom(
-          primary: Colors.grey,
+          backgroundColor: Colors.grey,
         ),
         child: const Text('Play again'),
       ),
